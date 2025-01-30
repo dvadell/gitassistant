@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 from langchain_core.tools import Tool
 from langchain_community.llms import Ollama
 from langchain.agents import create_react_agent
@@ -76,7 +77,7 @@ class GitTools:
             }
 
 class GitAssistant:
-    def __init__(self, repo_path: str, model_name: str = "codellama"):
+    def __init__(self, repo_path: str, model_name: str = "qwen2.5-coder"):
         self.git_tools = GitTools(repo_path)
         self.llm = Ollama(model=model_name, temperature=0)
         
@@ -123,15 +124,14 @@ Thought: I now know what to do
 Final Answer: the final answer to the original input question
 
 When using read_file, provide argument as: {{"file_path": "path/to/file"}}
-When using modify_file, provide arguments as: {{"file_path": "path/to/file", "content": "file content"}}
+When using modify_file, provide arguments as: {{"file_path": "path/to/file", "content": "file content"}}. Make sure the arguments are valid JSON.
 When using commit_changes, provide argument as: {{"message": "commit message"}}
 
 For code refactoring tasks:
 1. First read the existing file content
-2. Analyze the code and plan the refactoring
-3. Write the refactored code
-4. Modify the file with the new code
-5. Commit the changes with a descriptive message
+2. Analyze the code and plan the change or refactoring
+3. Modify the file with the new code
+4. Commit the changes with a descriptive message
 
 Begin!
 
@@ -159,7 +159,7 @@ def main():
         
         print("Git Assistant using LangChain and Ollama")
         print("----------------------------------------")
-        print("Using codellama model by default. Make sure Ollama is running!")
+        print("Using qwen2.5-coder model by default. Make sure Ollama is running!")
         print("Type 'exit' to quit")
         
         while True:
