@@ -9,8 +9,21 @@ import git
 import os
 import json
 import re
+import readline
 
 model = "qwen2.5-coder:3b"
+
+def read_multiline_input(prompt):
+    lines = []
+    
+    while True:
+        line = input(prompt)
+        
+        if line.lower() == 'Go!':
+            break
+        
+        lines.append(line)
+    return '\n'.join(lines)
 
 def process_file(x, git_tools):
     breakpoint()  # or import pdb; pdb.set_trace()
@@ -231,7 +244,7 @@ def main():
         print("Type 'exit' to quit")
         
         while True:
-            user_input = input("\nYou: ")
+            user_input = read_multiline_input("You: ")
             
             if user_input.lower() == 'exit':
                 break
