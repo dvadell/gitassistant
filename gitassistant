@@ -8,6 +8,74 @@ from typing import Dict, Any
 import git
 import os
 import json
+import re
+
+model = "qwen2.5-coder:3b"
+
+def process_file(x, git_tools):
+    breakpoint()  # or import pdb; pdb.set_trace()
+    return git_tools.modify_file(**clean_json_string(x))
+
+def clean_json_string(input_string):
+    """
+    Clean a string containing JSON and attempt to extract valid JSON structure.
+    
+    Args:
+        input_string (str): String containing JSON, potentially with extra content
+        
+    Returns:
+        cleaned_json_dict or None
+    """
+    try:
+        # First try to parse as-is in case it's already valid
+        return json.loads(input_string)
+    except json.JSONDecodeError:
+        # Look for content between curly braces
+        # This is a simplified approach - it will take the first valid JSON it finds
+        cleaned = input_string
+        try:
+            # Find the first opening brace
+            start = input_string.find('{')
+            if start == -1:
+                return None
+            
+            # Keep track of brace count to handle nested structures
+            count = 1
+            pos = start + 1
+            
+            # Find the matching closing brace
+            while count > 0 and pos < len(input_string):
+                if input_string[pos] == '{':
+                    count += 1
+                elif input_string[pos] == '}':
+                    count -= 1
+                pos += 1
+                
+            if count != 0:
+                return None
+                
+            # Extract the potential JSON string
+            json_str = input_string[start:pos]
+            
+            # Common cleanup operations
+            cleaned = json_str.strip()
+            # Fix common issues with quotes
+            cleaned = re.sub(r'(?<!\\)"', '"', cleaned)  # Fix straight quotes
+            cleaned = re.sub(r"(?<!\\)'", '"', cleaned)  # Replace single quotes with double quotes
+            # Fix missing quotes around keys
+            cleaned = re.sub(r'(\{|\,)\s*([a-zA-Z0-9_]+)\s*:', r'\1 "\2":', cleaned)
+            # Remove trailing commas
+            cleaned = re.sub(r',\s*([\}\]])', r'\1', cleaned)
+            # Remove heredoc-like triple quotes
+            cleaned = re.sub(r'"""', r'"', cleaned)
+            
+            return json.loads(cleaned)
+            
+        except (json.JSONDecodeError, IndexError):
+            try:
+                return json.loads(cleaned.split("\n")[0])
+            except (json.JSONDecodeError, IndexError):
+                return None
 
 class GitTools:
     def __init__(self, repo_path: str):
@@ -77,9 +145,9 @@ class GitTools:
             }
 
 class GitAssistant:
-    def __init__(self, repo_path: str, model_name: str = "qwen2.5-coder"):
+    def __init__(self, repo_path: str, model_name: str = model):
         self.git_tools = GitTools(repo_path)
-        self.llm = Ollama(model=model_name, temperature=0)
+        self.llm = Ollama(model=model_name, num_ctx=65536, temperature=0)
         
         # Define tools
         self.tools = [
@@ -95,7 +163,7 @@ class GitAssistant:
                 description="""Modify or create a file in the git repository. 
                 Arguments must be provided as a JSON string with 'file_path' and 'content' keys.
                 Example: {"file_path": "example.py", "content": "print('hello')"}""",
-                func=lambda x: self.git_tools.modify_file(**json.loads(x))
+                func=lambda x: process_file(x, self.git_tools)
             ),
             Tool(
                 name="commit_changes",
