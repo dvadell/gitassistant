@@ -11,7 +11,8 @@ import json
 import re
 import readline
 
-model = "qwen2.5-coder:3b"
+#model = "qwen2.5-coder:3b"
+model = "mistral-small"
 
 def read_multiline_input(prompt):
     lines = []
@@ -19,7 +20,7 @@ def read_multiline_input(prompt):
     while True:
         line = input(prompt)
         
-        if line.lower() == 'Go!':
+        if line.lower() == 'go!':
             break
         
         lines.append(line)
@@ -160,7 +161,7 @@ class GitTools:
 class GitAssistant:
     def __init__(self, repo_path: str, model_name: str = model):
         self.git_tools = GitTools(repo_path)
-        self.llm = Ollama(model=model_name, num_ctx=65536, temperature=0)
+        self.llm = Ollama(model=model_name, temperature=0)
         
         # Define tools
         self.tools = [
