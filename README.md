@@ -33,3 +33,5 @@ You: Create a new file called get_temp.py that prints the temperature for the ci
 
 ## Does it really work?
 Sometimes. It depends on the model you can run. Most models I've tried on my laptop are too small to use the tools right. It should work better with bigger models.
+
+[The Cline docs](https://docs.cline.bot/running-models-locally/read-me-first) have a better writeup about the reliability of tools vs. the size of the model.
